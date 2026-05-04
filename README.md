@@ -1,6 +1,6 @@
 # Quiet Pomo
 
-Quiet Pomo adalah website Pomodoro sederhana, elegan, dan bergaya Notion-like. Project ini dibuat sebagai aplikasi statis sehingga mudah di-upload ke GitHub atau GitHub Pages.
+Quiet Pomo adalah website Pomodoro sederhana, elegan, dan bergaya Notion-like. Project ini dibuat sebagai aplikasi statis sehingga mudah digunakan
 
 ## Fitur
 
@@ -14,19 +14,3 @@ Quiet Pomo adalah website Pomodoro sederhana, elegan, dan bergaya Notion-like. P
 - Custom teks notifikasi browser.
 - Data tersimpan otomatis di browser lewat localStorage.
 - Responsive untuk desktop dan mobile.
-
-## Cara menjalankan
-
-Buka `index.html` langsung di browser, atau jalankan server lokal sederhana:
-
-```bash
-python -m http.server 5173
-```
-
-Lalu buka:
-
-```text
-http://localhost:5173
-```
-
-Untuk notifikasi browser, akses lewat `localhost` lebih disarankan daripada membuka file langsung.
