@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pomodoro timer simpel, elegan, dan Notion-like dengan tugas, tema warna, suara jarum jam, dan notifikasi custom."
+    />
+    <title>Quiet Pomo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Quiet Pomo">
+          <span class="brand-mark" aria-hidden="true">Q</span>
+          <span>Quiet Pomo</span>
+        </a>
+        <nav class="top-actions" aria-label="Aksi utama">
+          <button class="icon-button" id="notificationPermission" type="button" title="Aktifkan notifikasi">
+            <span aria-hidden="true">!</span>
+          </button>
+          <button class="icon-button" id="resetDay" type="button" title="Reset progres hari ini">
+            <span aria-hidden="true">↻</span>
+          </button>
+        </nav>
+      </header>
+
+      <main class="layout">
+        <section class="timer-panel" aria-labelledby="timerTitle">
+          <div class="mode-tabs" role="tablist" aria-label="Mode timer">
+            <button class="mode-tab active" type="button" data-mode="pomodoro" role="tab">Pomodoro</button>
+            <button class="mode-tab" type="button" data-mode="shortBreak" role="tab">Short Break</button>
+            <button class="mode-tab" type="button" data-mode="longBreak" role="tab">Long Break</button>
+          </div>
+
+          <div class="timer-card">
+            <p class="eyebrow" id="timerTitle">Working on</p>
+            <h1 class="current-task" id="currentTask">Time to focus</h1>
+            <div class="timer-display" id="timerDisplay" aria-live="polite">25:00</div>
+            <div class="progress-track" aria-hidden="true">
+              <span id="progressFill"></span>
+            </div>
+            <div class="timer-actions">
+              <button class="primary-button" id="startPause" type="button">Start</button>
+              <button class="ghost-button" id="skipMode" type="button">Skip</button>
+              <button class="ghost-button" id="resetTimer" type="button">Reset</button>
+            </div>
+          </div>
+
+          <div class="stats-row" aria-label="Ringkasan progres">
+            <article>
+              <strong id="sessionCount">0</strong>
+              <span>Sessions</span>
+            </article>
+            <article>
+              <strong id="focusMinutes">0m</strong>
+              <span>Focus</span>
+            </article>
+            <article>
+              <strong id="finishEstimate">--:--</strong>
+              <span>Finish at</span>
+            </article>
+          </div>
+        </section>
+
+        <aside class="side-panel" aria-label="Tugas dan pengaturan">
+          <section class="tasks-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Tasks</p>
+                <h2>Today</h2>
+              </div>
+              <span id="taskSummary">0 left</span>
+            </div>
+
+            <form class="task-form" id="taskForm">
+              <input id="taskInput" type="text" placeholder="Tulis tugas..." autocomplete="off" />
+              <input id="taskEstimate" type="number" min="1" max="20" value="1" aria-label="Estimasi pomodoro" />
+              <button type="submit" title="Tambah tugas">+</button>
+            </form>
+
+            <div class="task-list" id="taskList" aria-live="polite"></div>
+          </section>
+
+          <section class="settings-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Settings</p>
+                <h2>Focus setup</h2>
+              </div>
+            </div>
+
+            <div class="settings-grid">
+              <label>
+                <span>Pomodoro</span>
+                <input id="pomodoroDuration" type="number" min="1" max="180" value="25" />
+              </label>
+              <label>
+                <span>Short break</span>
+                <input id="shortBreakDuration" type="number" min="1" max="90" value="5" />
+              </label>
+              <label>
+                <span>Long break</span>
+                <input id="longBreakDuration" type="number" min="1" max="120" value="15" />
+              </label>
+              <label>
+                <span>Long interval</span>
+                <input id="longBreakInterval" type="number" min="2" max="12" value="4" />
+              </label>
+            </div>
+
+            <div class="toggle-list">
+              <label class="switch-row">
+                <span>Auto-start breaks</span>
+                <input id="autoStartBreaks" type="checkbox" />
+              </label>
+              <label class="switch-row">
+                <span>Auto-start pomodoros</span>
+                <input id="autoStartPomodoros" type="checkbox" />
+              </label>
+              <label class="switch-row">
+                <span>Suara jarum jam</span>
+                <input id="tickSound" type="checkbox" />
+              </label>
+            </div>
+
+            <div class="sound-row">
+              <label>
+                <span>Volume tick</span>
+                <input id="tickVolume" type="range" min="0" max="100" value="35" />
+              </label>
+              <label>
+                <span>Alarm</span>
+                <select id="alarmSound">
+                  <option value="bell">Bell</option>
+                  <option value="soft">Soft chime</option>
+                  <option value="digital">Digital</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="notification-label">
+              <span>Notifikasi custom</span>
+              <textarea id="notificationText" rows="3">Waktunya berpindah mode. Ambil napas sebentar.</textarea>
+            </label>
+
+            <div class="theme-picker" aria-label="Pilih warna background">
+              <button class="theme-swatch active" type="button" data-theme="paper" title="Paper"></button>
+              <button class="theme-swatch" type="button" data-theme="sage" title="Sage"></button>
+              <button class="theme-swatch" type="button" data-theme="clay" title="Clay"></button>
+              <button class="theme-swatch" type="button" data-theme="ink" title="Ink"></button>
+              <label class="custom-color" title="Warna bebas">
+                <span>Custom</span>
+                <input id="customColor" type="color" value="#f6f6f4" />
+              </label>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
