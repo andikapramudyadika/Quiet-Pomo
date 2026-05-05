@@ -63,6 +63,23 @@ let lastTickAt = null;
 let audioContext = null;
 let tickInterval = null;
 
+const ICONS = {
+  bell: `
+    <svg viewBox="0 0 24 24" role="img">
+      <path d="M10.27 21a2 2 0 0 0 3.46 0" />
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+    </svg>
+  `,
+  bellOff: `
+    <svg viewBox="0 0 24 24" role="img">
+      <path d="m2 2 20 20" />
+      <path d="M10.27 21a2 2 0 0 0 3.46 0" />
+      <path d="M7.7 4.7A6 6 0 0 1 18 8c0 1.7.18 3.02.46 4.04" />
+      <path d="M17 17H3c0-2 3-2 3-9 0-.55.07-1.08.2-1.58" />
+    </svg>
+  `,
+};
+
 const elements = {
   timerDisplay: document.querySelector("#timerDisplay"),
   progressFill: document.querySelector("#progressFill"),
@@ -91,6 +108,10 @@ const elements = {
   notificationText: document.querySelector("#notificationText"),
   customColor: document.querySelector("#customColor"),
   themeSwatches: document.querySelectorAll(".theme-swatch"),
+  settingsToggle: document.querySelector("#settingsToggle"),
+  settingsDrawer: document.querySelector("#settingsDrawer"),
+  settingsClose: document.querySelector("#settingsClose"),
+  drawerBackdrop: document.querySelector("#drawerBackdrop"),
   notificationPermission: document.querySelector("#notificationPermission"),
   resetDay: document.querySelector("#resetDay"),
 };
@@ -167,9 +188,17 @@ function render() {
   renderTasks();
   renderSettings();
   renderTheme();
+  renderNotificationButton();
   renderFinishEstimate();
   updateDocumentTitle();
   saveState();
+}
+
+function renderNotificationButton() {
+  const allowed = "Notification" in window && Notification.permission === "granted";
+  elements.notificationPermission.querySelector(".button-icon").innerHTML = allowed ? ICONS.bell : ICONS.bellOff;
+  elements.notificationPermission.title = allowed ? "Notifikasi aktif" : "Aktifkan notifikasi";
+  elements.notificationPermission.setAttribute("aria-label", allowed ? "Notifikasi aktif" : "Aktifkan notifikasi");
 }
 
 function renderSettings() {
@@ -224,7 +253,7 @@ function renderTasks() {
     check.className = "task-check";
     check.type = "button";
     check.title = "Pilih tugas";
-    check.textContent = task.id === state.activeTaskId ? "✓" : "";
+    check.textContent = task.id === state.activeTaskId ? "\u2713" : "";
     check.addEventListener("click", () => {
       state.activeTaskId = task.id;
       render();
@@ -234,13 +263,13 @@ function renderTasks() {
     const remaining = Math.max(0, task.estimate - task.done);
     copy.innerHTML = `
       <span class="task-name">${escapeHtml(task.name)}</span>
-      <span class="task-meta">${task.done}/${task.estimate} selesai · ${remaining} tersisa</span>
+      <span class="task-meta">${task.done}/${task.estimate} selesai - ${remaining} tersisa</span>
     `;
 
     const stepper = document.createElement("div");
     stepper.className = "stepper";
     stepper.innerHTML = `
-      <button type="button" title="Kurangi estimasi">−</button>
+      <button type="button" title="Kurangi estimasi">-</button>
       <strong>${task.estimate}</strong>
       <button type="button" title="Tambah estimasi">+</button>
     `;
@@ -259,7 +288,7 @@ function renderTasks() {
     remove.className = "task-delete";
     remove.type = "button";
     remove.title = "Hapus tugas";
-    remove.textContent = "×";
+    remove.textContent = "x";
     remove.addEventListener("click", () => deleteTask(task.id));
 
     item.append(check, copy, stepper, remove);
@@ -369,9 +398,12 @@ function completeMode() {
 
 function nextModeAfter(mode) {
   if (mode !== "pomodoro") return "pomodoro";
-  return state.stats.sessions > 0 && state.stats.sessions % state.settings.longBreakInterval === 0
-    ? "longBreak"
-    : "shortBreak";
+  return shouldUseLongBreak(state.stats.sessions) ? "longBreak" : "shortBreak";
+}
+
+function shouldUseLongBreak(sessionCount) {
+  const interval = Math.max(2, Number(state.settings.longBreakInterval) || DEFAULT_STATE.settings.longBreakInterval);
+  return sessionCount > 0 && sessionCount % interval === 0;
 }
 
 function completeActiveTaskStep() {
@@ -385,7 +417,27 @@ function completeActiveTaskStep() {
 }
 
 function skipMode() {
-  completeMode();
+  const skippedMode = state.mode;
+  const wasRunning = state.isRunning;
+  const shouldAutoStart =
+    wasRunning || (skippedMode === "pomodoro" ? state.settings.autoStartBreaks : state.settings.autoStartPomodoros);
+
+  stopTimer();
+  state.isRunning = false;
+
+  if (skippedMode === "pomodoro") {
+    state.stats.sessions += 1;
+    state.mode = shouldUseLongBreak(state.stats.sessions) ? "longBreak" : "shortBreak";
+  } else {
+    state.mode = "pomodoro";
+  }
+
+  state.remainingSeconds = modeDuration(state.mode);
+  render();
+
+  if (shouldAutoStart) {
+    startTimer();
+  }
 }
 
 function addTask(name, estimate) {
@@ -501,14 +553,33 @@ async function requestNotificationPermission() {
     alert("Browser ini belum mendukung notifikasi.");
     return;
   }
-  const permission = await Notification.requestPermission();
-  elements.notificationPermission.textContent = permission === "granted" ? "✓" : "!";
+  await Notification.requestPermission();
+  renderNotificationButton();
 }
 
 function resetDay() {
-  state.stats = { sessions: 0, focusSeconds: 0 };
-  state.tasks = state.tasks.map((task) => ({ ...task, done: 0 }));
+  const confirmed = window.confirm("Yakin ingin mereset timer ke tampilan awal Pomodoro?");
+  if (!confirmed) return;
+
+  stopTimer();
+  state.isRunning = false;
+  state.mode = "pomodoro";
+  state.remainingSeconds = modeDuration("pomodoro");
+  state.activeTaskId = null;
   render();
+}
+
+function openSettingsDrawer() {
+  elements.settingsDrawer.classList.add("open");
+  elements.settingsDrawer.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSettingsDrawer() {
+  elements.settingsDrawer.classList.remove("open");
+  elements.settingsDrawer.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  elements.settingsToggle.focus();
 }
 
 elements.startPause.addEventListener("click", () => {
@@ -592,11 +663,18 @@ elements.customColor.addEventListener("input", (event) => {
 
 elements.notificationPermission.addEventListener("click", requestNotificationPermission);
 elements.resetDay.addEventListener("click", resetDay);
+elements.settingsToggle.addEventListener("click", openSettingsDrawer);
+elements.settingsClose.addEventListener("click", closeSettingsDrawer);
+elements.drawerBackdrop.addEventListener("click", closeSettingsDrawer);
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && elements.settingsDrawer.classList.contains("open")) {
+    closeSettingsDrawer();
+  }
+});
 
 window.addEventListener("beforeunload", saveState);
 
 if (!MODES.includes(state.mode)) state.mode = "pomodoro";
 if (!state.remainingSeconds || state.remainingSeconds < 0) state.remainingSeconds = modeDuration();
-elements.notificationPermission.textContent =
-  "Notification" in window && Notification.permission === "granted" ? "✓" : "!";
 render();

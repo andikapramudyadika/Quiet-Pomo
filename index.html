@@ -24,11 +24,38 @@
           <span>Quiet Pomo</span>
         </a>
         <nav class="top-actions" aria-label="Aksi utama">
+          <button class="icon-button" id="settingsToggle" type="button" title="Buka pengaturan">
+            <span class="button-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v3" />
+                <path d="M12 19v3" />
+                <path d="M4.93 4.93l2.12 2.12" />
+                <path d="M16.95 16.95l2.12 2.12" />
+                <path d="M2 12h3" />
+                <path d="M19 12h3" />
+                <path d="M4.93 19.07l2.12-2.12" />
+                <path d="M16.95 7.05l2.12-2.12" />
+              </svg>
+            </span>
+          </button>
           <button class="icon-button" id="notificationPermission" type="button" title="Aktifkan notifikasi">
-            <span aria-hidden="true">!</span>
+            <span class="button-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="m2 2 20 20" />
+                <path d="M10.27 21a2 2 0 0 0 3.46 0" />
+                <path d="M7.7 4.7A6 6 0 0 1 18 8c0 1.7.18 3.02.46 4.04" />
+                <path d="M17 17H3c0-2 3-2 3-9 0-.55.07-1.08.2-1.58" />
+              </svg>
+            </span>
           </button>
           <button class="icon-button" id="resetDay" type="button" title="Reset progres hari ini">
-            <span aria-hidden="true">↻</span>
+            <span class="button-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M3 12a9 9 0 1 0 3-6.7" />
+                <path d="M3 4v6h6" />
+              </svg>
+            </span>
           </button>
         </nav>
       </header>
@@ -70,101 +97,116 @@
             </article>
           </div>
         </section>
-
-        <aside class="side-panel" aria-label="Tugas dan pengaturan">
-          <section class="tasks-section">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Tasks</p>
-                <h2>Today</h2>
-              </div>
-              <span id="taskSummary">0 left</span>
-            </div>
-
-            <form class="task-form" id="taskForm">
-              <input id="taskInput" type="text" placeholder="Tulis tugas..." autocomplete="off" />
-              <input id="taskEstimate" type="number" min="1" max="20" value="1" aria-label="Estimasi pomodoro" />
-              <button type="submit" title="Tambah tugas">+</button>
-            </form>
-
-            <div class="task-list" id="taskList" aria-live="polite"></div>
-          </section>
-
-          <section class="settings-section">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Settings</p>
-                <h2>Focus setup</h2>
-              </div>
-            </div>
-
-            <div class="settings-grid">
-              <label>
-                <span>Pomodoro</span>
-                <input id="pomodoroDuration" type="number" min="1" max="180" value="25" />
-              </label>
-              <label>
-                <span>Short break</span>
-                <input id="shortBreakDuration" type="number" min="1" max="90" value="5" />
-              </label>
-              <label>
-                <span>Long break</span>
-                <input id="longBreakDuration" type="number" min="1" max="120" value="15" />
-              </label>
-              <label>
-                <span>Long interval</span>
-                <input id="longBreakInterval" type="number" min="2" max="12" value="4" />
-              </label>
-            </div>
-
-            <div class="toggle-list">
-              <label class="switch-row">
-                <span>Auto-start breaks</span>
-                <input id="autoStartBreaks" type="checkbox" />
-              </label>
-              <label class="switch-row">
-                <span>Auto-start pomodoros</span>
-                <input id="autoStartPomodoros" type="checkbox" />
-              </label>
-              <label class="switch-row">
-                <span>Suara jarum jam</span>
-                <input id="tickSound" type="checkbox" />
-              </label>
-            </div>
-
-            <div class="sound-row">
-              <label>
-                <span>Volume tick</span>
-                <input id="tickVolume" type="range" min="0" max="100" value="35" />
-              </label>
-              <label>
-                <span>Alarm</span>
-                <select id="alarmSound">
-                  <option value="bell">Bell</option>
-                  <option value="soft">Soft chime</option>
-                  <option value="digital">Digital</option>
-                </select>
-              </label>
-            </div>
-
-            <label class="notification-label">
-              <span>Notifikasi custom</span>
-              <textarea id="notificationText" rows="3">Waktunya berpindah mode. Ambil napas sebentar.</textarea>
-            </label>
-
-            <div class="theme-picker" aria-label="Pilih warna background">
-              <button class="theme-swatch active" type="button" data-theme="paper" title="Paper"></button>
-              <button class="theme-swatch" type="button" data-theme="sage" title="Sage"></button>
-              <button class="theme-swatch" type="button" data-theme="clay" title="Clay"></button>
-              <button class="theme-swatch" type="button" data-theme="ink" title="Ink"></button>
-              <label class="custom-color" title="Warna bebas">
-                <span>Custom</span>
-                <input id="customColor" type="color" value="#f6f6f4" />
-              </label>
-            </div>
-          </section>
-        </aside>
       </main>
+
+      <div class="settings-drawer" id="settingsDrawer" aria-hidden="true">
+        <button class="drawer-backdrop" id="drawerBackdrop" type="button" aria-label="Tutup pengaturan"></button>
+        <aside class="side-panel" aria-label="Tugas dan pengaturan">
+          <div class="drawer-header">
+            <div>
+              <p class="eyebrow">Workspace</p>
+              <h2>Tasks & settings</h2>
+            </div>
+            <button class="icon-button" id="settingsClose" type="button" title="Tutup pengaturan">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="drawer-content">
+            <section class="tasks-section">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Tasks</p>
+                  <h2>Today</h2>
+                </div>
+                <span id="taskSummary">0 left</span>
+              </div>
+
+              <form class="task-form" id="taskForm">
+                <input id="taskInput" type="text" placeholder="Tulis tugas..." autocomplete="off" />
+                <input id="taskEstimate" type="number" min="1" max="20" value="1" aria-label="Estimasi pomodoro" />
+                <button type="submit" title="Tambah tugas">+</button>
+              </form>
+
+              <div class="task-list" id="taskList" aria-live="polite"></div>
+            </section>
+
+            <section class="settings-section">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Settings</p>
+                  <h2>Focus setup</h2>
+                </div>
+              </div>
+
+              <div class="settings-grid">
+                <label>
+                  <span>Pomodoro</span>
+                  <input id="pomodoroDuration" type="number" min="1" max="180" value="25" />
+                </label>
+                <label>
+                  <span>Short break</span>
+                  <input id="shortBreakDuration" type="number" min="1" max="90" value="5" />
+                </label>
+                <label>
+                  <span>Long break</span>
+                  <input id="longBreakDuration" type="number" min="1" max="120" value="15" />
+                </label>
+                <label>
+                  <span>Long interval</span>
+                  <input id="longBreakInterval" type="number" min="2" max="12" value="4" />
+                </label>
+              </div>
+
+              <div class="toggle-list">
+                <label class="switch-row">
+                  <span>Auto-start breaks</span>
+                  <input id="autoStartBreaks" type="checkbox" />
+                </label>
+                <label class="switch-row">
+                  <span>Auto-start pomodoros</span>
+                  <input id="autoStartPomodoros" type="checkbox" />
+                </label>
+                <label class="switch-row">
+                  <span>Suara jarum jam</span>
+                  <input id="tickSound" type="checkbox" />
+                </label>
+              </div>
+
+              <div class="sound-row">
+                <label>
+                  <span>Volume tick</span>
+                  <input id="tickVolume" type="range" min="0" max="100" value="35" />
+                </label>
+                <label>
+                  <span>Alarm</span>
+                  <select id="alarmSound">
+                    <option value="bell">Bell</option>
+                    <option value="soft">Soft chime</option>
+                    <option value="digital">Digital</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="notification-label">
+                <span>Notifikasi custom</span>
+                <textarea id="notificationText" rows="3">Waktunya berpindah mode. Ambil napas sebentar.</textarea>
+              </label>
+
+              <div class="theme-picker" aria-label="Pilih warna background">
+                <button class="theme-swatch active" type="button" data-theme="paper" title="Paper"></button>
+                <button class="theme-swatch" type="button" data-theme="sage" title="Sage"></button>
+                <button class="theme-swatch" type="button" data-theme="clay" title="Clay"></button>
+                <button class="theme-swatch" type="button" data-theme="ink" title="Ink"></button>
+                <label class="custom-color" title="Warna bebas">
+                  <span>Custom</span>
+                  <input id="customColor" type="color" value="#f6f6f4" />
+                </label>
+              </div>
+            </section>
+          </div>
+        </aside>
+      </div>
     </div>
 
     <script src="app.js"></script>

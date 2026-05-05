@@ -96,14 +96,36 @@ button {
   border-radius: 8px;
   background: var(--surface);
   color: var(--text);
-  font-weight: 800;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.icon-button:hover {
+  background: var(--surface-solid);
+}
+
+.icon-button:active {
+  transform: translateY(1px);
+}
+
+.button-icon,
+.button-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.button-icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
-  gap: 22px;
-  align-items: start;
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
   padding-top: 30px;
 }
 
@@ -115,6 +137,10 @@ button {
 .timer-panel {
   display: grid;
   gap: 14px;
+}
+
+.timer-panel .mode-tabs {
+  justify-self: center;
 }
 
 .mode-tabs {
@@ -261,6 +287,71 @@ label span {
 .side-panel {
   display: grid;
   gap: 14px;
+}
+
+.settings-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.settings-drawer.open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 20, 20, 0);
+  transition: background 180ms ease;
+}
+
+.settings-drawer.open .drawer-backdrop {
+  background: rgba(20, 20, 20, 0.24);
+}
+
+.settings-drawer .side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(480px, calc(100% - 18px));
+  height: 100%;
+  padding: 18px;
+  overflow: hidden;
+  border-left: 1px solid var(--line);
+  background: var(--bg-soft);
+  box-shadow: -24px 0 48px rgba(20, 20, 20, 0.14);
+  transform: translateX(104%);
+  transition: transform 220ms ease;
+}
+
+.settings-drawer.open .side-panel {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.drawer-content {
+  display: grid;
+  gap: 14px;
+  height: calc(100vh - 94px);
+  overflow: auto;
+  padding: 14px 2px 4px 0;
 }
 
 .tasks-section,
@@ -504,10 +595,6 @@ input[type="range"] {
 }
 
 @media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
   .timer-card {
     min-height: 450px;
   }
