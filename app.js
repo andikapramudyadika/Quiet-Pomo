@@ -2,24 +2,28 @@ const STORAGE_KEY = "quiet-pomo-state-v1";
 
 const THEMES = {
   paper: {
-    bg: "#f6f6f4",
-    accent: "#cf5f4b",
-    accentStrong: "#ab4333",
+    bg: "#ffffff",
+    accent: "#242424",
+    accentStrong: "#242424",
+    control: "#242424",
   },
   sage: {
     bg: "#dfe8dc",
     accent: "#5f7e67",
     accentStrong: "#3f614a",
+    control: "#5f7e67",
   },
   clay: {
     bg: "#efd6cb",
     accent: "#b96555",
     accentStrong: "#914539",
+    control: "#b96555",
   },
   ink: {
     bg: "#202124",
     accent: "#d9a441",
     accentStrong: "#e5bf69",
+    control: "#d9a441",
   },
 };
 
@@ -41,12 +45,12 @@ const DEFAULT_STATE = {
     longBreakInterval: 4,
     autoStartBreaks: false,
     autoStartPomodoros: false,
-    tickSound: false,
-    tickVolume: 35,
-    alarmSound: "bell",
+    alarmSound: "assets/notification/victory.mp3",
+    ambientSound: "assets/audio/fire-burning.m4a",
+    ambientVolume: 45,
     notificationText: "Waktunya berpindah mode. Ambil napas sebentar.",
     theme: "paper",
-    customColor: "#f6f6f4",
+    customColor: "#ffffff",
     useCustomColor: false,
   },
   stats: {
@@ -61,7 +65,7 @@ let state = loadState();
 let timerId = null;
 let lastTickAt = null;
 let audioContext = null;
-let tickInterval = null;
+let ambientAudio = null;
 
 const ICONS = {
   bell: `
@@ -102,9 +106,19 @@ const elements = {
   longBreakInterval: document.querySelector("#longBreakInterval"),
   autoStartBreaks: document.querySelector("#autoStartBreaks"),
   autoStartPomodoros: document.querySelector("#autoStartPomodoros"),
-  tickSound: document.querySelector("#tickSound"),
-  tickVolume: document.querySelector("#tickVolume"),
   alarmSound: document.querySelector("#alarmSound"),
+  alarmSelect: document.querySelector("#alarmSelect"),
+  alarmSoundButton: document.querySelector("#alarmSoundButton"),
+  alarmSoundLabel: document.querySelector("#alarmSoundLabel"),
+  alarmSoundMenu: document.querySelector("#alarmSoundMenu"),
+  alarmSoundOptions: document.querySelectorAll("#alarmSoundMenu [data-value]"),
+  ambientSound: document.querySelector("#ambientSound"),
+  ambientSelect: document.querySelector("#ambientSelect"),
+  ambientSoundButton: document.querySelector("#ambientSoundButton"),
+  ambientSoundLabel: document.querySelector("#ambientSoundLabel"),
+  ambientSoundMenu: document.querySelector("#ambientSoundMenu"),
+  ambientSoundOptions: document.querySelectorAll("#ambientSoundMenu [data-value]"),
+  ambientVolume: document.querySelector("#ambientVolume"),
   notificationText: document.querySelector("#notificationText"),
   customColor: document.querySelector("#customColor"),
   themeSwatches: document.querySelectorAll(".theme-swatch"),
@@ -208,11 +222,36 @@ function renderSettings() {
   elements.longBreakInterval.value = state.settings.longBreakInterval;
   elements.autoStartBreaks.checked = state.settings.autoStartBreaks;
   elements.autoStartPomodoros.checked = state.settings.autoStartPomodoros;
-  elements.tickSound.checked = state.settings.tickSound;
-  elements.tickVolume.value = state.settings.tickVolume;
   elements.alarmSound.value = state.settings.alarmSound;
+  renderAlarmSelect();
+  elements.ambientSound.value = state.settings.ambientSound;
+  renderAmbientSelect();
+  elements.ambientVolume.value = state.settings.ambientVolume;
+  elements.ambientVolume.style.setProperty("--ambient-level", `${state.settings.ambientVolume}%`);
   elements.notificationText.value = state.settings.notificationText;
   elements.customColor.value = state.settings.customColor;
+}
+
+function renderAlarmSelect() {
+  const value = state.settings.alarmSound;
+  const selectedOption = [...elements.alarmSound.options].find((option) => option.value === value);
+  elements.alarmSoundLabel.textContent = selectedOption ? selectedOption.textContent : "Victory";
+  elements.alarmSoundOptions.forEach((option) => {
+    const selected = option.dataset.value === value;
+    option.classList.toggle("selected", selected);
+    option.setAttribute("aria-selected", String(selected));
+  });
+}
+
+function renderAmbientSelect() {
+  const value = state.settings.ambientSound;
+  const selectedOption = [...elements.ambientSound.options].find((option) => option.value === value);
+  elements.ambientSoundLabel.textContent = selectedOption ? selectedOption.textContent : "Off";
+  elements.ambientSoundOptions.forEach((option) => {
+    const selected = option.dataset.value === value;
+    option.classList.toggle("selected", selected);
+    option.setAttribute("aria-selected", String(selected));
+  });
 }
 
 function renderTheme() {
@@ -222,6 +261,7 @@ function renderTheme() {
   document.documentElement.style.setProperty("--bg", bg);
   document.documentElement.style.setProperty("--accent", theme.accent);
   document.documentElement.style.setProperty("--accent-strong", theme.accentStrong);
+  document.documentElement.style.setProperty("--control", theme.control || theme.accent);
 
   elements.themeSwatches.forEach((swatch) => {
     swatch.classList.toggle("active", !state.settings.useCustomColor && swatch.dataset.theme === state.settings.theme);
@@ -331,7 +371,7 @@ function startTimer() {
   state.isRunning = true;
   lastTickAt = Date.now();
   timerId = window.setInterval(runSecond, 250);
-  updateTickSound();
+  updateAmbientSound();
   render();
 }
 
@@ -346,7 +386,7 @@ function stopTimer() {
     clearInterval(timerId);
     timerId = null;
   }
-  stopTickSound();
+  stopAmbientSound();
 }
 
 function runSecond() {
@@ -498,45 +538,41 @@ function beep(frequency, duration, volume = 0.08, type = "sine", delay = 0) {
 }
 
 function playAlarm() {
-  ensureAudio();
   const sound = state.settings.alarmSound;
-  if (sound === "soft") {
-    beep(660, 0.22, 0.07, "sine", 0);
-    beep(880, 0.28, 0.06, "sine", 0.24);
-    return;
-  }
-  if (sound === "digital") {
-    beep(920, 0.12, 0.07, "square", 0);
-    beep(720, 0.12, 0.07, "square", 0.16);
-    beep(920, 0.12, 0.07, "square", 0.32);
-    return;
-  }
-  beep(520, 0.18, 0.08, "triangle", 0);
-  beep(700, 0.2, 0.08, "triangle", 0.22);
-  beep(520, 0.24, 0.08, "triangle", 0.46);
+  if (!sound) return;
+  const alarmAudio = new Audio(sound);
+  alarmAudio.volume = 1;
+  alarmAudio.play().catch(() => {});
 }
 
-function updateTickSound() {
-  if (!state.isRunning || !state.settings.tickSound) {
-    stopTickSound();
+function updateAmbientSound() {
+  if (!state.isRunning || !state.settings.ambientSound) {
+    stopAmbientSound();
     return;
   }
-  ensureAudio();
-  if (tickInterval) return;
-  tick();
-  tickInterval = window.setInterval(tick, 1000);
-}
 
-function tick() {
-  const volume = Math.max(0, Math.min(100, Number(state.settings.tickVolume))) / 1000;
-  beep(1150, 0.025, volume, "square");
-}
-
-function stopTickSound() {
-  if (tickInterval) {
-    clearInterval(tickInterval);
-    tickInterval = null;
+  if (!ambientAudio) {
+    ambientAudio = new Audio();
+    ambientAudio.loop = true;
   }
+
+  const source = state.settings.ambientSound;
+  if (!ambientAudio.src.endsWith(source)) {
+    ambientAudio.pause();
+    ambientAudio.src = source;
+    ambientAudio.currentTime = 0;
+  }
+
+  ambientAudio.volume = Math.max(0, Math.min(100, Number(state.settings.ambientVolume))) / 100;
+  ambientAudio.play().catch(() => {
+    state.settings.ambientSound = "";
+    render();
+  });
+}
+
+function stopAmbientSound() {
+  if (!ambientAudio) return;
+  ambientAudio.pause();
 }
 
 function notifyUser(completedMode) {
@@ -558,14 +594,12 @@ async function requestNotificationPermission() {
 }
 
 function resetDay() {
-  const confirmed = window.confirm("Yakin ingin mereset timer ke tampilan awal Pomodoro?");
+  const confirmed = window.confirm("Yakin ingin menghapus semua sesi, waktu fokus, tugas, dan pengaturan tersimpan?");
   if (!confirmed) return;
 
   stopTimer();
-  state.isRunning = false;
-  state.mode = "pomodoro";
-  state.remainingSeconds = modeDuration("pomodoro");
-  state.activeTaskId = null;
+  localStorage.removeItem(STORAGE_KEY);
+  state = cloneDefaultState();
   render();
 }
 
@@ -579,7 +613,47 @@ function closeSettingsDrawer() {
   elements.settingsDrawer.classList.remove("open");
   elements.settingsDrawer.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
+  closeAlarmSelect();
+  closeAmbientSelect();
   elements.settingsToggle.focus();
+}
+
+function openAlarmSelect() {
+  closeAmbientSelect();
+  elements.alarmSelect.classList.add("open");
+  elements.alarmSoundButton.setAttribute("aria-expanded", "true");
+}
+
+function closeAlarmSelect() {
+  elements.alarmSelect.classList.remove("open");
+  elements.alarmSoundButton.setAttribute("aria-expanded", "false");
+}
+
+function toggleAlarmSelect() {
+  if (elements.alarmSelect.classList.contains("open")) {
+    closeAlarmSelect();
+    return;
+  }
+  openAlarmSelect();
+}
+
+function openAmbientSelect() {
+  closeAlarmSelect();
+  elements.ambientSelect.classList.add("open");
+  elements.ambientSoundButton.setAttribute("aria-expanded", "true");
+}
+
+function closeAmbientSelect() {
+  elements.ambientSelect.classList.remove("open");
+  elements.ambientSoundButton.setAttribute("aria-expanded", "false");
+}
+
+function toggleAmbientSelect() {
+  if (elements.ambientSelect.classList.contains("open")) {
+    closeAmbientSelect();
+    return;
+  }
+  openAmbientSelect();
 }
 
 elements.startPause.addEventListener("click", () => {
@@ -623,23 +697,63 @@ elements.taskForm.addEventListener("submit", (event) => {
   });
 });
 
-["autoStartBreaks", "autoStartPomodoros", "tickSound"].forEach((key) => {
+["autoStartBreaks", "autoStartPomodoros"].forEach((key) => {
   elements[key].addEventListener("change", (event) => {
     state.settings[key] = event.target.checked;
-    updateTickSound();
     render();
   });
 });
 
-elements.tickVolume.addEventListener("input", (event) => {
-  state.settings.tickVolume = Number(event.target.value);
-  saveState();
+elements.alarmSoundButton.addEventListener("click", toggleAlarmSelect);
+
+elements.alarmSoundOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    state.settings.alarmSound = option.dataset.value;
+    elements.alarmSound.value = state.settings.alarmSound;
+    closeAlarmSelect();
+    playAlarm();
+    render();
+  });
 });
 
-elements.alarmSound.addEventListener("change", (event) => {
-  state.settings.alarmSound = event.target.value;
+elements.alarmSound.addEventListener("change", () => {
+  state.settings.alarmSound = elements.alarmSound.value;
   playAlarm();
   render();
+});
+
+elements.ambientSoundButton.addEventListener("click", toggleAmbientSelect);
+
+elements.ambientSoundOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    state.settings.ambientSound = option.dataset.value;
+    elements.ambientSound.value = state.settings.ambientSound;
+    closeAmbientSelect();
+    updateAmbientSound();
+    render();
+  });
+});
+
+document.addEventListener("click", (event) => {
+  if (!elements.alarmSelect.contains(event.target)) {
+    closeAlarmSelect();
+  }
+  if (!elements.ambientSelect.contains(event.target)) {
+    closeAmbientSelect();
+  }
+});
+
+elements.ambientSound.addEventListener("change", () => {
+  state.settings.ambientSound = elements.ambientSound.value;
+  updateAmbientSound();
+  render();
+});
+
+elements.ambientVolume.addEventListener("input", (event) => {
+  state.settings.ambientVolume = Number(event.target.value);
+  elements.ambientVolume.style.setProperty("--ambient-level", `${state.settings.ambientVolume}%`);
+  updateAmbientSound();
+  saveState();
 });
 
 elements.notificationText.addEventListener("input", (event) => {
@@ -668,6 +782,16 @@ elements.settingsClose.addEventListener("click", closeSettingsDrawer);
 elements.drawerBackdrop.addEventListener("click", closeSettingsDrawer);
 
 window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && elements.alarmSelect.classList.contains("open")) {
+    closeAlarmSelect();
+    elements.alarmSoundButton.focus();
+    return;
+  }
+  if (event.key === "Escape" && elements.ambientSelect.classList.contains("open")) {
+    closeAmbientSelect();
+    elements.ambientSoundButton.focus();
+    return;
+  }
   if (event.key === "Escape" && elements.settingsDrawer.classList.contains("open")) {
     closeSettingsDrawer();
   }
@@ -675,6 +799,16 @@ window.addEventListener("keydown", (event) => {
 
 window.addEventListener("beforeunload", saveState);
 
+function hasOption(select, value) {
+  return [...select.options].some((option) => option.value === value);
+}
+
 if (!MODES.includes(state.mode)) state.mode = "pomodoro";
 if (!state.remainingSeconds || state.remainingSeconds < 0) state.remainingSeconds = modeDuration();
+if (!hasOption(elements.alarmSound, state.settings.alarmSound)) {
+  state.settings.alarmSound = DEFAULT_STATE.settings.alarmSound;
+}
+if (!hasOption(elements.ambientSound, state.settings.ambientSound)) {
+  state.settings.ambientSound = DEFAULT_STATE.settings.ambientSound;
+}
 render();

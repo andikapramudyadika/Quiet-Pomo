@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Pomodoro timer simpel, elegan, dan Notion-like dengan tugas, tema warna, suara jarum jam, dan notifikasi custom."
+      content="Pomodoro timer simpel, elegan, dan Notion-like dengan tugas, tema warna, audio loop, dan notifikasi custom."
     />
     <title>Quiet Pomo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -49,11 +49,13 @@
               </svg>
             </span>
           </button>
-          <button class="icon-button" id="resetDay" type="button" title="Reset progres hari ini">
+          <button class="icon-button" id="resetDay" type="button" title="Reset semua data">
             <span class="button-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img">
-                <path d="M3 12a9 9 0 1 0 3-6.7" />
-                <path d="M3 4v6h6" />
+                <path d="M21 12a9 9 0 0 1-15.4 6.4" />
+                <path d="M3 12A9 9 0 0 1 18.4 5.6" />
+                <path d="M18 2v4h-4" />
+                <path d="M6 22v-4h4" />
               </svg>
             </span>
           </button>
@@ -167,24 +169,97 @@
                   <span>Auto-start pomodoros</span>
                   <input id="autoStartPomodoros" type="checkbox" />
                 </label>
-                <label class="switch-row">
-                  <span>Suara jarum jam</span>
-                  <input id="tickSound" type="checkbox" />
+              </div>
+
+              <div class="sound-row">
+                <label class="audio-loop-field">
+                  <span>Alarm</span>
+                  <select id="alarmSound" class="native-audio-select" tabindex="-1" aria-hidden="true">
+                    <option value="assets/notification/alarm-beep.mp3">Alarm beep</option>
+                    <option value="assets/notification/beeps.mp3">Beeps</option>
+                    <option value="assets/notification/bell.wav">Bell</option>
+                    <option value="assets/notification/musical1.mp3">Musical 1</option>
+                    <option value="assets/notification/musical2.mp3">Musical 2</option>
+                    <option value="assets/notification/piano-music.mp3">Piano music</option>
+                    <option value="assets/notification/ring-tone.mp3">Ring tone</option>
+                    <option value="assets/notification/timer.mp3">Timer</option>
+                    <option value="assets/notification/victory.mp3" selected>Victory</option>
+                  </select>
+                  <div class="audio-select" id="alarmSelect">
+                    <button
+                      class="audio-select-button"
+                      id="alarmSoundButton"
+                      type="button"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                    >
+                      <span id="alarmSoundLabel">Victory</span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    <div class="audio-select-menu" id="alarmSoundMenu" role="listbox">
+                      <button type="button" role="option" data-value="assets/notification/alarm-beep.mp3">Alarm beep</button>
+                      <button type="button" role="option" data-value="assets/notification/beeps.mp3">Beeps</button>
+                      <button type="button" role="option" data-value="assets/notification/bell.wav">Bell</button>
+                      <button type="button" role="option" data-value="assets/notification/musical1.mp3">Musical 1</button>
+                      <button type="button" role="option" data-value="assets/notification/musical2.mp3">Musical 2</button>
+                      <button type="button" role="option" data-value="assets/notification/piano-music.mp3">Piano music</button>
+                      <button type="button" role="option" data-value="assets/notification/ring-tone.mp3">Ring tone</button>
+                      <button type="button" role="option" data-value="assets/notification/timer.mp3">Timer</button>
+                      <button type="button" role="option" data-value="assets/notification/victory.mp3">Victory</button>
+                    </div>
+                  </div>
                 </label>
               </div>
 
               <div class="sound-row">
-                <label>
-                  <span>Volume tick</span>
-                  <input id="tickVolume" type="range" min="0" max="100" value="35" />
+                <label class="audio-loop-field">
+                  <span>Audio loop</span>
+                  <select id="ambientSound" class="native-audio-select" tabindex="-1" aria-hidden="true">
+                    <option value="">Off</option>
+                    <option value="assets/audio/coffee-shop.m4a">Coffee shop</option>
+                    <option value="assets/audio/fast-ticking.m4a">Fast ticking</option>
+                    <option value="assets/audio/fire-burning.m4a" selected>Fire burning</option>
+                    <option value="assets/audio/library.m4a">Library</option>
+                    <option value="assets/audio/ocean-shore.m4a">Ocean shore</option>
+                    <option value="assets/audio/rain.m4a">Rain</option>
+                    <option value="assets/audio/stream.m4a">Stream</option>
+                    <option value="assets/audio/ticking.m4a">Ticking</option>
+                    <option value="assets/audio/wind-through-trees.m4a">Wind through trees</option>
+                    <option value="assets/audio/wind-with-crickets.m4a">Wind with crickets</option>
+                  </select>
+                  <div class="audio-select" id="ambientSelect">
+                    <button
+                      class="audio-select-button"
+                      id="ambientSoundButton"
+                      type="button"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                    >
+                      <span id="ambientSoundLabel">Fire burning</span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    <div class="audio-select-menu" id="ambientSoundMenu" role="listbox">
+                      <button type="button" role="option" data-value="">Off</button>
+                      <button type="button" role="option" data-value="assets/audio/coffee-shop.m4a">Coffee shop</button>
+                      <button type="button" role="option" data-value="assets/audio/fast-ticking.m4a">Fast ticking</button>
+                      <button type="button" role="option" data-value="assets/audio/fire-burning.m4a">Fire burning</button>
+                      <button type="button" role="option" data-value="assets/audio/library.m4a">Library</button>
+                      <button type="button" role="option" data-value="assets/audio/ocean-shore.m4a">Ocean shore</button>
+                      <button type="button" role="option" data-value="assets/audio/rain.m4a">Rain</button>
+                      <button type="button" role="option" data-value="assets/audio/stream.m4a">Stream</button>
+                      <button type="button" role="option" data-value="assets/audio/ticking.m4a">Ticking</button>
+                      <button type="button" role="option" data-value="assets/audio/wind-through-trees.m4a">Wind through trees</button>
+                      <button type="button" role="option" data-value="assets/audio/wind-with-crickets.m4a">Wind with crickets</button>
+                    </div>
+                  </div>
                 </label>
                 <label>
-                  <span>Alarm</span>
-                  <select id="alarmSound">
-                    <option value="bell">Bell</option>
-                    <option value="soft">Soft chime</option>
-                    <option value="digital">Digital</option>
-                  </select>
+                  <span>Volume audio</span>
+                  <input id="ambientVolume" type="range" min="0" max="100" value="45" />
                 </label>
               </div>
 
@@ -200,7 +275,7 @@
                 <button class="theme-swatch" type="button" data-theme="ink" title="Ink"></button>
                 <label class="custom-color" title="Warna bebas">
                   <span>Custom</span>
-                  <input id="customColor" type="color" value="#f6f6f4" />
+                  <input id="customColor" type="color" value="#ffffff" />
                 </label>
               </div>
             </section>

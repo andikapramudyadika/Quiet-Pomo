@@ -1,23 +1,84 @@
 # Quiet Pomo
 
-Quiet Pomo adalah website Pomodoro sederhana, elegan, dan bergaya Notion-like. Project ini dibuat sebagai aplikasi statis sehingga mudah di-upload ke GitHub atau GitHub Pages.
+Quiet Pomo adalah website Pomodoro sederhana, bersih, dan bergaya Notion-like untuk membantu pengguna bekerja lebih fokus tanpa tampilan yang ramai. Aplikasi ini dibuat sebagai website statis dan sudah bisa diakses melalui GitHub Pages.
 
-## Fitur
+## Fitur Utama
 
-- Mode Pomodoro, Short Break, dan Long Break.
-- Durasi timer bisa diatur.
-- Auto-start untuk break dan pomodoro berikutnya.
-- Daftar tugas harian dengan estimasi jumlah sesi.
-- Estimasi waktu selesai.
-- Pilihan warna background dan custom color.
-- Suara alarm dan opsi suara jarum jam terus menerus.
-- Custom teks notifikasi browser.
-- Data tersimpan otomatis di browser lewat localStorage.
+- Timer Pomodoro dengan mode `Pomodoro`, `Short Break`, dan `Long Break`.
+- Durasi setiap mode bisa diatur sesuai kebutuhan.
+- Tombol `Start`, `Pause`, `Skip`, dan `Reset` untuk mengontrol sesi.
+- Statistik sesi dan total waktu fokus tersimpan otomatis di perangkat.
+- Task list harian dengan estimasi jumlah Pomodoro.
+- Estimasi waktu selesai berdasarkan daftar tugas.
+- Panel pengaturan tersembunyi agar tampilan utama tetap clean dan fokus.
+- Tema background: putih, sage, clay, ink, dan custom color.
+- Audio loop dari folder `assets/audio`, misalnya Fire burning, Rain, Library, Coffee shop, Ocean shore, dan Wind.
+- Suara alarm/notifikasi dari folder `assets/notification`.
+- Teks notifikasi browser bisa dikustomisasi.
 - Responsive untuk desktop dan mobile.
 
-## Cara menjalankan
+## Cara Menggunakan
 
-Buka `index.html` langsung di browser, atau jalankan server lokal sederhana:
+1. Buka website Quiet Pomo.
+2. Tekan `Start` untuk mulai sesi Pomodoro.
+3. Fokus sampai waktu selesai.
+4. Setelah sesi selesai, alarm akan berbunyi dan timer berpindah ke break.
+5. Gunakan panel pengaturan untuk mengubah durasi, audio, tema, task, dan notifikasi.
+
+## Penjelasan Tombol
+
+### Tombol di Timer
+
+- `Start`: memulai timer.
+- `Pause`: menghentikan timer sementara.
+- `Skip`: melewati sesi saat ini dan langsung lanjut ke sesi berikutnya.
+- `Reset`: mengembalikan waktu pada mode yang sedang aktif ke durasi utuh, tanpa berpindah mode.
+
+### Tombol di Kanan Atas
+
+- Ikon pengaturan: membuka panel `Tasks & settings`.
+- Ikon lonceng: meminta izin notifikasi browser. Jika izin sudah aktif, ikon akan berubah menjadi lonceng normal.
+- Ikon restart: mereset seluruh data aplikasi setelah konfirmasi, termasuk sesi, waktu fokus, task, dan pengaturan tersimpan.
+
+## Panel Tasks & Settings
+
+Panel ini dibuka dari ikon pengaturan di kanan atas.
+
+### Tasks
+
+Gunakan bagian `Tasks` untuk menambahkan daftar pekerjaan harian. Setiap task dapat diberi estimasi jumlah Pomodoro. Saat sesi Pomodoro selesai, progress task aktif akan bertambah otomatis.
+
+### Focus Setup
+
+Pengaturan yang tersedia:
+
+- `Pomodoro`: durasi sesi fokus.
+- `Short break`: durasi istirahat pendek.
+- `Long break`: durasi istirahat panjang.
+- `Long interval`: jumlah sesi Pomodoro sebelum Long Break.
+- `Auto-start breaks`: break otomatis mulai setelah Pomodoro selesai.
+- `Auto-start pomodoros`: Pomodoro otomatis mulai setelah break selesai.
+- `Alarm`: memilih suara notifikasi saat sesi selesai.
+- `Audio loop`: memilih ambience yang diputar saat timer berjalan.
+- `Volume audio`: mengatur volume audio loop.
+- `Notifikasi custom`: mengubah pesan notifikasi browser.
+- Theme picker: memilih warna background atau custom color.
+
+## Menjalankan Project
+
+### Akses Online
+
+Cara paling mudah untuk menggunakan Quiet Pomo adalah langsung membuka link berikut:
+
+[Buka Quiet Pomo](https://andikapramudyadika.github.io/Quiet-Pomo/)
+
+Setelah halaman terbuka, tekan `Start` untuk memulai timer. Semua pengaturan, task, sesi, dan waktu fokus akan tersimpan otomatis di perangkat yang digunakan.
+
+### Menjalankan Secara Lokal
+
+Jika ingin menjalankan project dari file lokal, buka `index.html` langsung di browser.
+
+Untuk pengalaman terbaik, terutama audio dan notifikasi browser, jalankan melalui local server:
 
 ```bash
 python -m http.server 5173
@@ -29,43 +90,10 @@ Lalu buka:
 http://localhost:5173
 ```
 
-Untuk notifikasi browser, akses lewat `localhost` lebih disarankan daripada membuka file langsung.
+## Catatan Browser
 
-## Menambahkan audio loop dari file MP3
+Beberapa browser hanya mengizinkan audio dan notifikasi setelah pengguna melakukan interaksi, misalnya menekan tombol `Start` atau mengaktifkan izin notifikasi.
 
-Gunakan langkah ini kalau ingin menambahkan suara luar seperti api unggun, hujan, white noise, atau ambience lain.
+## Kredit
 
-1. Buat folder `assets/audio` di dalam project.
-2. Masukkan file MP3 ke folder tersebut, misalnya `assets/audio/api-unggun.mp3`.
-3. Tambahkan elemen audio sebelum baris `<script src="app.js"></script>` di `index.html`:
-
-```html
-<audio id="ambientAudio" src="assets/audio/api-unggun.mp3" loop preload="none"></audio>
-```
-
-4. Tambahkan tombol atau switch di bagian settings, misalnya:
-
-```html
-<label class="switch-row">
-  <span>Suara api unggun</span>
-  <input id="ambientSound" type="checkbox" />
-</label>
-```
-
-5. Tambahkan kode ini di `app.js` setelah elemen lain terdaftar:
-
-```js
-const ambientAudio = document.querySelector("#ambientAudio");
-const ambientSound = document.querySelector("#ambientSound");
-
-ambientSound.addEventListener("change", async (event) => {
-  if (event.target.checked) {
-    ambientAudio.volume = 0.45;
-    await ambientAudio.play();
-  } else {
-    ambientAudio.pause();
-  }
-});
-```
-
-Catatan: browser biasanya hanya mengizinkan audio diputar setelah pengguna menekan tombol atau switch. Untuk GitHub Pages, pastikan nama folder dan file sama persis, termasuk huruf besar-kecil.
+Dibuat oleh [Andika Pramudya](https://www.instagram.com/andikapramudyadika/).
