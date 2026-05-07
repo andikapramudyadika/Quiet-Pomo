@@ -1,6 +1,6 @@
 # Quiet Pomo
 
-Quiet Pomo adalah website Pomodoro sederhana, bersih, dan bergaya Notion-like untuk membantu pengguna bekerja lebih fokus tanpa tampilan yang ramai. Aplikasi ini dibuat sebagai website statis dan sudah bisa diakses melalui GitHub Pages.
+Quiet Pomo adalah website Pomodoro sederhana dan bersih untuk membantu pengguna bekerja lebih fokus tanpa tampilan yang ramai. Aplikasi ini dibuat sebagai website statis sehingga mudah diakses.
 
 ## Fitur Utama
 
@@ -93,7 +93,3 @@ http://localhost:5173
 ## Catatan Browser
 
 Beberapa browser hanya mengizinkan audio dan notifikasi setelah pengguna melakukan interaksi, misalnya menekan tombol `Start` atau mengaktifkan izin notifikasi.
-
-## Kredit
-
-Dibuat oleh [Andika Pramudya](https://www.instagram.com/andikapramudyadika/).
